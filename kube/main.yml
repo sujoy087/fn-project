@@ -1,0 +1,6 @@
+---
+- import_playbook: /root/fn-project/kube/ping.yml
+- import_playbook: /root/fn-project/kube/node_prepare.yml
+- import_playbook: /root/fn-project/kube/master_node.yml
+- import_playbook: /root/fn-project/kube/worker_node.yml
+- import_playbook: /root/fn-project/kube/status_check.yml
