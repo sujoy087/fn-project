@@ -15,7 +15,7 @@ pipeline{
         
         stage('Upgrading the nginx version'){
             steps{
-                dir('work2-3') {
+                dir('fn2-2') {
                     
                     sh "sed -i s,nginx:version,nginx:$Imagetag,g nginx-version-manifest.yaml"
                     
