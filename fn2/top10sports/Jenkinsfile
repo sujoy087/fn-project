@@ -44,7 +44,7 @@ pipeline{
         
         stage('Deploy the application'){
             steps{
-                dir('work2/top10sports') {
+                dir('fn2/top10sports') {
                     
                     sh "sed -i s,sujoysarkar087/toop10sports,sujoysarkar087/toop10sports:${BUILD_NUMBER},g top10sports-manifest.yaml"
                     
