@@ -1,0 +1,14 @@
+[master]
+kmaster1 ansible_host=192.168.122.61 ansible_connection=ssh ansible_user=root ansible_ssh_pass=root
+
+[worker]
+kworker1 ansible_host=192.168.122.62 ansible_connection=ssh ansible_user=root ansible_ssh_pass=root
+kworker2 ansible_host=192.168.122.63 ansible_connection=ssh ansible_user=root ansible_ssh_pass=root
+
+[test]
+test_server ansible_host=192.168.0.177 ansible_connection=ssh ansible_user=root ansible_ssh_pass=tirzok_123
+
+
+[all_nodes:children]
+master
+worker

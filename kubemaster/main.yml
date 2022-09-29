@@ -1,0 +1,6 @@
+---
+- import_playbook: /root/k8s_single_master_deployment/ping.yml
+- import_playbook: /root/k8s_single_master_deployment/node_prepare.yml
+- import_playbook: /root/k8s_single_master_deployment/master_node.yml
+- import_playbook: /root/k8s_single_master_deployment/worker_node.yml
+- import_playbook: /root/k8s_single_master_deployment/status_check.yml

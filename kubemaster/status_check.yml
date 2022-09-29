@@ -1,0 +1,17 @@
+---
+  - name: Checking the clusters Node Status.
+    hosts: master
+    tasks:
+      - name: Check the Node Status.
+        ansible.builtin.shell: kubectl get nodes -o wide
+        register: node_status
+
+      - debug:
+          var: node_status.stdout_lines
+
+      - name: Check pod status on kube-system namespace.
+        ansible.builtin.shell: kubectl get pods -n kube-system -o wide
+        register: pod_status
+
+      - debug:
+          var: pod_status.stdout_lines 

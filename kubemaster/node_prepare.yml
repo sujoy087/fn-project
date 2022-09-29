@@ -1,0 +1,139 @@
+-
+  name: Preparing Nodes for kubernetes installation.
+  hosts: all_nodes
+  tasks:
+    - name: Disabling swap from the systems.
+      ansible.builtin.shell: swapoff -a
+
+    - name: Commentput swap entry from fstab file.
+      replace:
+        path: /etc/fstab
+        regexp: '(^/.*swap*)'
+        replace: '# \1'
+
+    - name: Making host file entry for all the nodes in k8s cluster.
+      ansible.builtin.copy:
+        src: /root/k8s_single_master_deployment/files/hosts
+        dest: /etc/hosts
+        owner: root
+        mode: '0644'
+
+    - name: Enabling overlay module.
+      community.general.modprobe:
+        name: overlay
+        state: present
+
+    - name: Enabling br_netfilter module.
+      community.general.modprobe:
+        name: br_netfilter
+        state: present
+
+    - ansible.posix.sysctl:
+        name: vm.swappiness
+        value: '0'
+        state: present
+
+    - ansible.posix.sysctl:
+        name: net.bridge.bridge-nf-call-ip6tables
+        value: '1'
+        state: present
+
+    - ansible.posix.sysctl:
+        name: net.bridge.bridge-nf-call-iptables
+        value: '1'
+        state: present
+
+    - ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        state: present
+
+    - name: Stop the firewall.
+      ansible.builtin.service:
+        name: firewalld
+        state: stopped
+
+    - name: Installing docker prerequisite packages.
+      apt:
+        update_cache: yes
+        name: [apt-transport-https, ca-certificates, curl, gnupg, lsb-release, software-properties-common]
+        state: present
+    
+    - name: Creating keyrings directory.
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+
+    - name: adding gpg official key.
+      ansible.builtin.shell: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+    - name: Adding docker repository.
+      apt_repository:
+       repo: deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu {{ansible_distribution_release}} stable
+       state: present
+       filename: docker
+
+    - name: update repo and install docker package.
+      apt:
+       update_cache: yes
+       name: [docker-ce, docker-ce-cli, containerd.io]
+   
+    - name: Restart docker service.
+      ansible.builtin.service:
+        name: docker
+        state: restarted
+
+    - name: Copy daemon.json file from control node to k8s cluster nodes.
+      ansible.builtin.copy:
+        src: /root/k8s_single_master_deployment/files/daemon.json
+        dest: /etc/docker/daemon.json
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Restart docker service.
+      ansible.builtin.service:
+        name: docker
+        state: restarted
+
+    - name: Delete the config.toml file from /etc/containerd.
+      ansible.builtin.file:
+        path: /etc/containerd/config.toml
+        state: absent
+
+    - name: Restart containerd service.
+      ansible.builtin.service:
+        name: containerd
+        state: restarted
+
+    - name: Adding google cloud gpg key for kubernetes.
+      ansible.builtin.shell: curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+
+    - name: Adding Kubernetes repository.
+      apt_repository:
+       repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+       state: present
+       filename: kubernetes
+
+    - name: Updating the repositories.
+      apt:
+        update_cache: yes
+
+    - name: Installing Kubeadm, Kubectl, Kubelet packages on the machine.
+      apt:
+        name: [kubeadm=1.21.13-00, kubectl=1.21.13-00, kubelet=1.21.13-00]
+        state: present
+
+          #    - name: Checking  kubeadm version.
+          #      ansible.builtin.shell: kubeadm version
+          #      register: kubeadm_version
+          #    - debug:
+          #        var: kubeadm_version.stdout_lines
+          #
+          #    - name: Checking kubectl version.
+          #      ansible.builtin.shell: kubectl version 
+          #      register: kubectl_version
+          #    - debug:
+          #        var: kubectl_version.stdout_lines
+
+

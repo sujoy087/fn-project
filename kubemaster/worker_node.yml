@@ -1,0 +1,24 @@
+---
+  - name: Joining worker node in kunernetes cluster.
+    hosts: worker
+    become: yes
+    become_user: root
+    tasks:
+      - name: Ensuring Docker service is active.
+        ansible.builtin.service:
+          name: docker
+          state: started
+
+      - name: Copy the joining command file from Control node to k8s clusters worker node.
+        ansible.builtin.copy:
+          src: /root/kubernetes_join_command
+          dest: /root/kubernetes_join_command
+          mode: '0755'
+
+      - name: Joining the worker node with the k8s cluster.
+        ansible.builtin.shell: sh /root/kubernetes_join_command
+        register: joining_command_result
+
+      - debug:
+          var: joining_command_result.stdout_lines
+

@@ -1,0 +1,6 @@
+-
+  name: checking server reachability.
+  hosts: all_nodes
+  tasks:
+    - name: ping the servers
+      ping:
